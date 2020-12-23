@@ -1,5 +1,5 @@
 
-setwd("~/Documents/Laboratory/RNA_seq")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 library(NMF)
 
 # read in circadian count data and phase data

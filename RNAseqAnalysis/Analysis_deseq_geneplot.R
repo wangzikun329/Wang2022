@@ -32,66 +32,81 @@ dseq.plot <- DESeqDataSetFromMatrix(count = read.counts, colData = sample.info, 
 # run DESeq
 dseq.plot <- DESeq(dseq.plot)
 
-# retrieve annotation information from database with FLYBASEID as input
+# single gene plot with zt as x
 retrieveName <- function(FBgnID){
   genename <- select(org.Dm.eg.db, keys = c(FBgnID, "FBgn0003996"), keytype = "FLYBASE", columns=c("GENENAME"))
   # genename <- strsplit(genename[,2]," ")[[1]][1]
   return(genename[1,2])
 }
 
-# function to plot count data with FlybaseID as input
 countPlotbyID <- function(FBgnID, returnData=FALSE, savePlottoPDF=FALSE){
   gene.data <- plotCounts(dseq.plot, gene = FBgnID, normalized = TRUE, returnData=TRUE)
   gene.plot <- ggplot(gene.data, aes(x=ZT, y=count, color=condition, group=condition)) + 
     geom_point() + geom_line() + theme_linedraw() + ylab("Normalized count") + theme(panel.grid = element_blank()) +
     ggtitle(paste(FBgnID,retrieveName(FBgnID),sep="\n")) + theme(plot.title = element_text(hjust = 0.5))
-  # option to save the plot as pdf
   if(savePlottoPDF == TRUE){
     pdf(paste(FBgnID, ".pdf", sep = ""))
     print(gene.plot)
     dev.off()
   }
   print(gene.plot)
-  # option to return count data
   if(returnData == TRUE){
     colnames(gene.data)[1] <- paste0(FBgnID, "_count")
     return(gene.data[,1,drop=FALSE])
   }
 }
 
-# with genename as input, retrieve Flybase ID, then plot count data
 countPlotbyName <- function(genename){
   FBgnID <- select(org.Dm.eg.db, keys = genename, keytype = "GENENAME", columns=c("FLYBASE"))
   countPlotbyID(FBgnID[,2])
 }
 
-# plot rpkm data with FlybaseID as input
 rpkmPlotbyID <- function(FBgnID, returnData=FALSE, savePlottoPDF=FALSE){
   gene.data <- as.data.frame(t(read.rpkm[FBgnID, ]))
   gene.plot <- ggplot(gene.data, aes(x=ZT, y=gene.data[, 1], color=genotype, group=genotype)) +
     geom_point() + geom_line() + theme_linedraw() + ylab("RPKM") + theme(panel.grid = element_blank()) +
     ggtitle(paste(FBgnID,retrieveName(FBgnID),sep="\n")) + theme(plot.title = element_text(hjust = 0.5))
-  # save plot to pdf
   if(savePlottoPDF == TRUE){
     pdf(paste(FBgnID, ".pdf", sep = ""))
     print(gene.plot)
     dev.off()
   }
   print(gene.plot)
-  # return rpkmp data
   if(returnData == TRUE){
     colnames(gene.data) <- paste0(FBgnID, "_RPKM")
     return(gene.data)
   }
 }
 
-# with genename as input, retrieve Flybase ID, then plot rpkm data
+# rpkmPlotbyID <- function(FBgnID, returnData=FALSE, savePlottoPDF=FALSE){
+#   gene.data <- as.data.frame(t(read.rpkm[FBgnID, ]))
+#   gene.plot <- ggplot(gene.data, aes(x=ZT, y=gene.data[, 1], color=genotype, group=genotype)) + 
+#     geom_point() + geom_line() + theme_linedraw() + ylab("RPKM") + 
+#     ggtitle(paste(FBgnID,retrieveName(FBgnID),sep="\n")) +
+#     theme(
+#       plot.title = element_text(hjust = 0.5),
+#       panel.grid = element_blank(),
+#       panel.border = element_blank(),
+#       axis.line = element_line(size = 0.5),
+#       axis.ticks = element_line(size = 0.5)
+#     )
+#   if(savePlottoPDF == TRUE){
+#     pdf(paste(FBgnID, ".pdf", sep = ""))
+#     print(gene.plot)
+#     dev.off()
+#   }
+#   print(gene.plot)
+#   if(returnData == TRUE){
+#     colnames(gene.data) <- paste0(FBgnID, "_RPKM")
+#     return(gene.data)
+#   }
+# }
+
 rpkmPlotbyName <- function(genename, returnData=FALSE, savePlottoPDF=FALSE){
   FBgnID <- select(org.Dm.eg.db, keys = genename, keytype = "GENENAME", columns=c("FLYBASE"))
   rpkmPlotbyID(FBgnID[,2], returnData, savePlottoPDF)
 }
 
-# with FlybaseCG as input, retrieve Flybase ID, then plot rpkm data
 rpkmPlotbyCG <- function(geneCG, returnData=FALSE, savePlottoPDF=FALSE){
   FBgnID <- select(org.Dm.eg.db, keys = geneCG, keytype = "FLYBASECG", columns=c("FLYBASE"))
   rpkmPlotbyID(FBgnID[,2], returnData, savePlottoPDF)
@@ -101,4 +116,11 @@ countPlotbyID("FBgn0036585")
 countPlotbyName("white")
 
 rpkmPlotbyID("FBgn0036585")
+# rpkmPlotbyID("FBgn0036585", savePlottoPDF = TRUE)
 rpkmPlotbyName("period", returnData = TRUE)
+
+# for (genename in genename.list){
+#   gene.data <- plotCounts(dseq.ds, gene = genename, normalized = TRUE, returnData=TRUE)
+#   print(ggplot(gene.data, aes(x=ZT, y=count, color=condition, group=condition)) + geom_point() + geom_line() + theme_linedraw())
+#   # plotCounts(dseq.ds, gene = genename, normalized = TRUE)
+# }

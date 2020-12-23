@@ -1,7 +1,7 @@
 
-setwd("~/Documents/Laboratory/RNA_seq")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-project <- "WT2U"
+project <- "INC1"
 
 # install GeneCycle package
 # install.packages("fdrtool_1.2.15.tar.gz",repos = NULL, type = "source")

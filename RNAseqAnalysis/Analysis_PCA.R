@@ -1,6 +1,6 @@
 
 # setup
-setwd("~/Documents/Laboratory/RNA_seq")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 library(ggplot2)
 library(reshape2)
 library(DESeq2)
@@ -47,6 +47,10 @@ sizeFactors(dseq.ds)
 # extract raw counts and size factor normalized counts
 counts.raw <- data.frame(counts(dseq.ds))
 counts.sfnorm <- data.frame(counts(dseq.ds, normalized = TRUE))
+
+# save fileted data for next step analysis
+# write.table(counts.raw, file = "Filtered_raw_counts.txt", sep = "\t", quote = FALSE, row.names = TRUE)
+# write.table(counts.sfnorm, file = "Filtered_sfnorm_counts.txt", sep = "\t", quote = FALSE, row.names = TRUE)
 
 # check the similarities between samples
 panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
@@ -175,3 +179,85 @@ plotPCA_single(rlog.dseq.sumExp[,1:12])
 plotPCA_single(rlog.dseq.sumExp[,13:24])
 plotPCA_single(rlog.dseq.sumExp[,25:36])
 plotPCA_single(rlog.dseq.sumExp[,37:48])
+
+# the code below takes into consideration that some genes in wakeD2 showed abnormal expression
+# these genes showed higher expression in a handful of timepoints irrespective to 24h cycle
+# these genes will be removed
+# calculate differences between replicates
+# diff.std.error <- counts.sfnorm[,13:24] / (rowSums(counts.sfnorm[,13:24])/12)
+# diff.std.error <- log2(diff.std.error + 0.001)
+# gene.list <- log.norm.counts[abs(rowSums(diff.std.error)) >= 10,]
+# genes.large.variance <- intersect(row.names(gene.list), row.names(wake.zt36))
+
+
+# max.diffrence <- log.norm.counts[,16]-log.norm.counts[,22]
+# hist(max.diffrence, breaks = 200)
+# sum(abs(max.diffrence) > 10)
+# 
+# max.difference.thres <- 1:20
+# for(i in 1:20){
+#   max.difference.thres[i] <- sum(abs(max.diffrence) > i)
+# }
+# plot(max.difference.thres)
+# 
+# # save genes to be discarded
+# genes.large.variance <- counts.raw[abs(max.diffrence) > 5, ]
+# write.table(genes.large.variance, file = "Genes_filtered_by_variance.txt", sep = "\t", quote = FALSE, row.names = TRUE)
+# 
+# for(gene in intersect(row.names(genes.large.variance), row.names(dge.tc))) rpkmPlotbyID(gene)
+# 
+# for(gene in setdiff(row.names(dge.tc), row.names(counts.raw.filter))) rpkmPlotbyID(gene)
+# 
+# # filter normalized counts with threshold of difference
+# log.norm.filter <- log.norm.counts[abs(max.diffrence) <= 5,]
+# 
+# # apply same filter to deseq data set
+# dseq.ds.filter <- dseq.ds[row.names(log.norm.filter), ]
+# 
+# # calculate and correct for differences in library sizes
+# dseq.ds.filter <- estimateSizeFactors(dseq.ds.filter)
+# sizeFactors(dseq.ds.filter)
+# 
+# # extract raw counts and size factor normalized counts
+# counts.raw.filter <- data.frame(counts(dseq.ds.filter))
+# counts.sfnorm.filter <- data.frame(counts(dseq.ds.filter, normalized = TRUE))
+# 
+# # transform size factor normalized counts to log2 scale
+# log.norm.counts.filter <- log2(counts.sfnorm.filter + 0.001)
+# 
+# # rlog transform filtered deseq data set
+# rlog.dseq.filter <- rlog(dseq.ds.filter, blind = TRUE)
+# vst.dseq.filter <- vst(dseq.ds.filter, blind = TRUE, nsub = 1000, fitType = "parametric")
+# 
+# # plot rlog transformed vs nontransformed
+# plot(assay(rlog.dseq.filter[,16]), assay(rlog.dseq.filter[,22]))
+# plot(assay(vst.dseq.filter[,16]), assay(vst.dseq.filter[,22]))
+# plot(log.norm.counts.filter[,16], log.norm.counts.filter[,22])
+# 
+# # plot PCA
+# plotPCA(rlog.dseq.filter)
+# plotPCA(vst.dseq.filter)
+# 
+# heatmap.correlation(log.norm.filter, limit = c(0.8,1))
+# heatmap.correlation(assay(rlog.dseq.filter), limit = c(0.95,1))
+# heatmap.correlation(assay(vst.dseq.filter), limit = c(0.9,1))
+# 
+# plotPCA(rlog.dseq.filter[,1:12])
+# plotPCA(rlog.dseq.filter[,13:24])
+# plotPCA(rlog.dseq.filter[,25:36])
+# plotPCA(rlog.dseq.filter[,37:48])
+# 
+# plotPCA(vst.dseq.filter[,1:12])
+# plotPCA(vst.dseq.filter[,13:24])
+# plotPCA(vst.dseq.filter[,25:36])
+# plotPCA(vst.dseq.filter[,37:48])
+# 
+# # plot the similarities within groups after filterting
+# pairs(log.norm.filter[,c(paste("INC1",c("00", "04", "08", "12", "16", "20", "24", "28", "32", "36", "40", "44"),sep="_ZT"))], lower.panel = panel.cor, upper.panel = panel.cor, xaxt = "n", yaxt = "n")
+# pairs(log.norm.filter[,c(paste("WAKED2",c("00", "04", "08", "12", "16", "20", "24", "28", "32", "36", "40", "44"),sep="_ZT"))], lower.panel = panel.cor, upper.panel = panel.cor, xaxt = "n", yaxt = "n")
+# pairs(log.norm.filter[,c(paste("WT2U_old",c("00", "04", "08", "12", "16", "20", "24", "28", "32", "36", "40", "44"),sep="_ZT"))], lower.panel = panel.cor, upper.panel = panel.cor, xaxt = "n", yaxt = "n")
+# pairs(log.norm.filter[,c(paste("WT2U",c("00", "04", "08", "12", "16", "20", "24", "28", "32", "36", "40", "44"),sep="_ZT"))], lower.panel = panel.cor, upper.panel = panel.cor, xaxt = "n", yaxt = "n")
+# 
+# write.table(counts.raw.filter, file = "Filtered_raw_counts_PCA.txt", sep = "\t", quote = FALSE, row.names = TRUE)
+# write.table(counts.sfnorm.filter, file = "Filtered_sfnorm_counts_PCA.txt", sep = "\t", quote = FALSE, row.names = TRUE)
+

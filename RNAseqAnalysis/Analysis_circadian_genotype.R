@@ -1,10 +1,10 @@
 
-setwd("~/Documents/Laboratory/RNA_seq/")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-wt2u.union <- read.table(file = "circadian_union_JTK_WT2U.txt", header = TRUE)
-inc1.union <- read.table(file = "circadian_union_JTK_INC1.txt", header = TRUE)
-waked2.union <- read.table(file = "circadian_union_JTK_WAKED2.txt", header = TRUE)
-wt2uold.union <- read.table(file = "circadian_union_JTK_WT2U_old.txt", header = TRUE)
+wt2u.union <- read.table(file = "circadian_union_JTK_WT2U_result.txt", header = TRUE)
+inc1.union <- read.table(file = "circadian_union_JTK_INC1_result.txt", header = TRUE)
+waked2.union <- read.table(file = "circadian_union_JTK_WAKED2_result.txt", header = TRUE)
+wt2uold.union <- read.table(file = "circadian_union_JTK_WT2U_old_result.txt", header = TRUE)
 
 head(wt2u.union)
 

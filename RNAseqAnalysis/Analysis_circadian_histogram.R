@@ -1,11 +1,9 @@
 
-setwd("~/Documents/Laboratory/RNA_seq")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 library(NMF)
 library(ggplot2)
 library(circular)
 library(tidyverse)
-
-setwd("~/Documents/Laboratory/RNA_seq/")
 
 # BiocManager::install("tidyverse")
 
